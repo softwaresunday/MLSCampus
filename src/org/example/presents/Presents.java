@@ -27,15 +27,15 @@ public class Presents extends Activity
    // These matrices will be used to move and zoom image
    Matrix matrix = new Matrix();
    Matrix savedMatrix = new Matrix();
-   static float xLoc = (float) 1100.0;
-   static float yLoc = (float) 650.0;
+   static float xLoc = (float) 0.0;
+   static float yLoc = (float) 0.0;
    static float newXLoc;
    static float newYLoc;
    static float mx,my,mz;
    static final float xMin = (float)0.0;
-   static final float xMax = (float)1900.0;
+   static final float xMax = (float)300.0;
    static final float yMin = (float)0.0;
-   static final float yMax = (float)1550.0;
+   static final float yMax = (float)500.0;
    static float tX = (float)0.0;
    static float tY = (float)0.0;
    private MediaPlayer affirm;
@@ -57,7 +57,7 @@ public class Presents extends Activity
 	   }
 	   }
  //how much time your popup window should appear
-   private static final int POPUP_DISMISS_DELAY = 2000;
+   private static final int POPUP_DISMISS_DELAY = 300;
    private DismissPopup mDismissPopup = new DismissPopup();
    
    // Remember some things for zooming
@@ -197,7 +197,7 @@ public class Presents extends Activity
 	}
 	
 	public void onAccelerationChanged(float x, float y, float z) {
-		if (Math.abs(x-mx) > 1.5 || Math.abs(y-my) > 1.5 || Math.abs(z-mz) > 1.5)
+		if (Math.abs(x-mx) > 3.5 || Math.abs(y-my) > 3.5 || Math.abs(z-mz) > 3.5)
 		{
 			affirm.start();
 		}
@@ -205,7 +205,7 @@ public class Presents extends Activity
 	}
 
 	public void onShake(float force) {
-		 if (force > 0.2) affirm.start();
+		 if (force > 0.4) affirm.start();
 	}
 
 }

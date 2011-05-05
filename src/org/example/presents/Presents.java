@@ -127,7 +127,7 @@ public class Presents extends Activity
          lastx = (int)event.getX();
          lasty = (int)event.getY();
          lastSquare = touch2ss((int)event.getX(), (int)event.getY());
-         pos = new String("("+lastx+","+lasty+")");
+         pos = new String("("+lastx+","+lasty+") "+lastSquare);
          osccon.send("/activity", lastSquare, 3);
          lpView.setText(pos);
          lpu = new PopupWindow(lpView,80,20);
@@ -153,11 +153,11 @@ public class Presents extends Activity
             matrix.set(savedMatrix);
             tX = event.getX()-start.x;
             tY = event.getY()-start.y;
-            newXLoc = xLoc - tX;
-            newYLoc = yLoc - tY;
-            if (newXLoc<xMin || newXLoc>xMax) {tX = (float)0.0;}
-            if (newYLoc<yMin || newYLoc>yMax) {tY = (float)0.0;}
-            matrix.postTranslate(tX,tY);
+   //         newXLoc = xLoc - tX;
+   //         newYLoc = yLoc - tY;
+   //         if (newXLoc<xMin || newXLoc>xMax) {tX = (float)0.0;}
+   //         if (newYLoc<yMin || newYLoc>yMax) {tY = (float)0.0;}
+  //          matrix.postTranslate(tX,tY);
          }
          else if (mode == ZOOM) {
             float newDist = spacing(event);
@@ -184,9 +184,11 @@ public class Presents extends Activity
    }
    
    private int touch2ss(int x, int y)  {
-	   int horiz = (x+50)/100;
-	   int vert  = (y+75)/150;
-	   return (1 + horiz) + 3*vert;
+	   int horiz = (x)/110;
+	   int vert  = (350-y)/115;
+	       if (vert < 0) vert = 0;
+	       
+	   return (1 + (horiz + 3*vert));
    	}
    
    public void onScan(View v) {

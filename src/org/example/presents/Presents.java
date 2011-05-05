@@ -17,8 +17,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.os.Debug;
 import java.lang.Math;
+import java.net.ConnectException;
 
 
 public class Presents extends Activity
@@ -27,21 +27,25 @@ public class Presents extends Activity
    // These matrices will be used to move and zoom image
    Matrix matrix = new Matrix();
    Matrix savedMatrix = new Matrix();
-   static float xLoc = (float) 1100.0;
-   static float yLoc = (float) 650.0;
+   static float xLoc = (float) 0.0;
+   static float yLoc = (float) 0.0;
    static float newXLoc;
    static float newYLoc;
    static float mx,my,mz;
    static final float xMin = (float)0.0;
-   static final float xMax = (float)1900.0;
+   static final float xMax = (float)300.0;
    static final float yMin = (float)0.0;
-   static final float yMax = (float)1550.0;
+   static final float yMax = (float)500.0;
    static float tX = (float)0.0;
    static float tY = (float)0.0;
+   static int lastx = 1;
+   static int lasty = 1;
+   static int lastSquare = 1;
    private MediaPlayer affirm;
    private MediaPlayer deny;
    private static Context CONTEXT;
    private static PopupWindow lpu = null;
+   private static OSCConnection osccon = null;
    LinearLayout layout;
 
    private static TextView lpView; 
@@ -52,12 +56,16 @@ public class Presents extends Activity
    int mode = NONE;
    
    class DismissPopup implements Runnable {
+	   private static final int POPUP_DISMISS_DELAY = 100;   
 	   public void run() {
-	   if (lpu != null) { lpu.dismiss(); }
+	   if (lpu != null) { 
+		   try { Thread.sleep(POPUP_DISMISS_DELAY);} catch (InterruptedException e) {}
+		   lpu.dismiss(); 
+		   }
 	   }
 	   }
  //how much time your popup window should appear
-   private static final int POPUP_DISMISS_DELAY = 2000;
+
    private DismissPopup mDismissPopup = new DismissPopup();
    
    // Remember some things for zooming
@@ -82,6 +90,10 @@ public class Presents extends Activity
       view.setImageMatrix(matrix);
       lpView = new TextView(CONTEXT);
       lpView.setTextAppearance(CONTEXT, R.style.MyDefaultTextAppearance);
+      osccon = new OSCConnection();
+      try {
+		osccon.connect("10.0.0.109:7000");
+	  } catch (ConnectException e) {	e.printStackTrace();	}
    }
    protected void onResume() {
 	   super.onResume();
@@ -112,7 +124,11 @@ public class Presents extends Activity
          start.set(event.getX(), event.getY());
          Log.d(TAG, "mode=DRAG");
          mode = DRAG;
-         pos = new String("("+((int)(xLoc+event.getX()))+","+((int)(yLoc+event.getY()))+")");
+         lastx = (int)event.getX();
+         lasty = (int)event.getY();
+         lastSquare = touch2ss((int)event.getX(), (int)event.getY());
+         pos = new String("("+lastx+","+lasty+")");
+         osccon.send("/activity", lastSquare, 3);
          lpView.setText(pos);
          lpu = new PopupWindow(lpView,80,20);
          lpu.showAtLocation(layout,Gravity.CENTER,-30,0);  
@@ -128,11 +144,8 @@ public class Presents extends Activity
          {
         	 //onScan(v);
          }
-         try { Thread.sleep(POPUP_DISMISS_DELAY);} catch (InterruptedException e) {}
-         if (lpu != null){
-        	 lpu.dismiss();
-        	 lpu = null;
-         }
+         osccon.send("/activity", lastSquare, 0);
+         mDismissPopup.run();
          break;
       case MotionEvent.ACTION_MOVE:
          if (mode == DRAG) {
@@ -170,6 +183,12 @@ public class Presents extends Activity
       return FloatMath.sqrt(x * x + y * y);
    }
    
+   private int touch2ss(int x, int y)  {
+	   int horiz = (x+50)/100;
+	   int vert  = (y+75)/150;
+	   return (1 + horiz) + 3*vert;
+   	}
+   
    public void onScan(View v) {
 	        Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 	        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
@@ -180,7 +199,7 @@ public class Presents extends Activity
 	    if (requestCode == 0) {
 	        if (resultCode == RESULT_OK) {
 	            String contents = intent.getStringExtra("SCAN_RESULT");
-	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+	        //    String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 	           if (contents.length() > 30)
 	           {
 	        	   if (affirm != null) deny.start();
@@ -197,7 +216,7 @@ public class Presents extends Activity
 	}
 	
 	public void onAccelerationChanged(float x, float y, float z) {
-		if (Math.abs(x-mx) > 1.5 || Math.abs(y-my) > 1.5 || Math.abs(z-mz) > 1.5)
+		if (Math.abs(x-mx) > 4.5 || Math.abs(y-my) > 4.5 || Math.abs(z-mz) > 4.5)
 		{
 			affirm.start();
 		}
@@ -205,7 +224,7 @@ public class Presents extends Activity
 	}
 
 	public void onShake(float force) {
-		 if (force > 0.2) affirm.start();
+		 if (force > 0.5) affirm.start();
 	}
 
 }

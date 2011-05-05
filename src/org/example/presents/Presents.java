@@ -65,7 +65,7 @@ public class Presents extends Activity
 	   }
 	   }
  //how much time your popup window should appear
-
+   private static final int POPUP_DISMISS_DELAY = 300;
    private DismissPopup mDismissPopup = new DismissPopup();
    
    // Remember some things for zooming

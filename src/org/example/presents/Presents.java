@@ -9,6 +9,7 @@ import android.graphics.PointF;
 import android.os.Bundle;
 import android.util.FloatMath;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,6 +47,8 @@ public class Presents extends Activity
    private static Context CONTEXT;
    private static PopupWindow lpu = null;
    private static OSCConnection osccon = null;
+   int gWid;
+   int gHgt;
    LinearLayout layout;
 
    private static TextView lpView; 
@@ -65,7 +68,7 @@ public class Presents extends Activity
 	   }
 	   }
  //how much time your popup window should appear
-   private static final int POPUP_DISMISS_DELAY = 300;
+ //  private static final int POPUP_DISMISS_DELAY = 300;
    private DismissPopup mDismissPopup = new DismissPopup();
    
    // Remember some things for zooming
@@ -94,6 +97,10 @@ public class Presents extends Activity
       try {
 		osccon.connect("10.0.0.109:7000");
 	  } catch (ConnectException e) {	e.printStackTrace();	}
+	  
+	  Display display = getWindowManager().getDefaultDisplay(); 
+	  gWid = display.getWidth();
+	  gHgt = display.getHeight();
    }
    protected void onResume() {
 	   super.onResume();
@@ -127,7 +134,8 @@ public class Presents extends Activity
          lastx = (int)event.getX();
          lasty = (int)event.getY();
          lastSquare = touch2ss((int)event.getX(), (int)event.getY());
-         pos = new String("("+lastx+","+lasty+") "+lastSquare);
+//         pos = new String("("+lastx+","+lasty+") "+lastSquare);
+         pos = new String("("+gWid+","+gHgt+") "+lastSquare);
          osccon.send("/activity", lastSquare, 3);
          lpView.setText(pos);
          lpu = new PopupWindow(lpView,80,20);
@@ -184,8 +192,8 @@ public class Presents extends Activity
    }
    
    private int touch2ss(int x, int y)  {
-	   int horiz = (x)/110;
-	   int vert  = (350-y)/115;
+	   int horiz = (3*x)/gWid;
+	   int vert  = ((int)(5.0*(500.0-(double)y)))/gHgt;
 	       if (vert < 0) vert = 0;
 	       
 	   return (1 + (horiz + 3*vert));
